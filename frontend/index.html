@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="description"
+    content="AI-Driven Hyper-Local Business Advisory and Financial Structuring Assistant for Rural Micro-Entrepreneurs — SIH 2026 Project 26091" />
+  <meta name="theme-color" content="#00C896" />
+  <meta property="og:title" content="BizSaathi — AI Business Advisor" />
+  <meta property="og:description"
+    content="Free AI advisor for rural micro-entrepreneurs. Business advice, government schemes, and financial guidance in your language." />
+  <title>BizSaathi — AI Business Advisor</title>
+
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+
+  <!-- ═══ SETUP MODAL ═══════════════════════════════════════════ -->
+  <div id="setup-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <span class="modal-icon">🌱</span>
+      <h2 id="modal-title">Welcome to BizSaathi</h2>
+      <p>Your free AI business advisor. Enter your name or mobile number to get started. Your conversations are saved so
+        the AI remembers your business.</p>
+      <div class="modal-input-group">
+        <input class="modal-input" id="user-id-input" type="text" placeholder="Enter your name or mobile number"
+          maxlength="64" autocomplete="off" spellcheck="false" />
+        <input class="modal-input" id="user-name-display" type="text" placeholder="Your display name (optional)"
+          maxlength="64" autocomplete="off" />
+      </div>
+      <button class="modal-btn" id="start-btn" onclick="startSession()">
+        Start Chatting →
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN APP ═══════════════════════════════════════════════ -->
+  <div id="app">
+
+    <!-- Sidebar overlay (mobile) -->
+    <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- ── SIDEBAR ──────────────────────────────────────── -->
+    <aside id="sidebar" role="complementary" aria-label="Business Profile">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">🌱</div>
+          <div>
+            <h1>BizSaathi<span class="subtitle">AI Business Advisor</span></h1>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-body">
+        <!-- Business Profile Card -->
+        <div class="profile-card">
+          <h2>🏪 My Business Profile</h2>
+          <div class="profile-row" id="profile-fields">
+            <!-- Populated by JS -->
+            <div class="profile-field">
+              <span class="label">Loading...</span>
+            </div>
+          </div>
+          <div id="profile-updated-tag" class="profile-updated-tag hidden">
+            ✨ Profile auto-updated
+          </div>
+        </div>
+
+        <!-- Memory Stats -->
+        <div class="memory-stats" style="margin-top:14px;">
+          <h3>🧠 Memory Stats</h3>
+          <div class="memory-stat-row">
+            <span class="stat-label">Total turns</span>
+            <span class="stat-val" id="stat-turns">—</span>
+          </div>
+          <div class="memory-stat-row">
+            <span class="stat-label">Last RAG hits</span>
+            <span class="stat-val" id="stat-rag">—</span>
+          </div>
+          <div class="memory-stat-row">
+            <span class="stat-label">User ID</span>
+            <span class="stat-val" id="stat-uid" style="font-size:10px;word-break:break-all;">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div id="lang-select-wrapper">
+          <label for="language-select">🌐 Response Language</label>
+          <select id="language-select" onchange="onLanguageChange()">
+            <option value="en">🇬🇧 English</option>
+            <option value="hi">🇮🇳 हिंदी (Hindi)</option>
+            <option value="mr">महाराष्ट्र मराठी</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+          </select>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── CHAT PANEL ────────────────────────────────────── -->
+    <main id="chat-panel" role="main">
+
+      <!-- Chat Header -->
+      <header id="chat-header">
+        <button id="menu-toggle" onclick="toggleSidebar()" aria-label="Open profile sidebar">
+          ☰
+        </button>
+        <div class="header-avatar">🤖</div>
+        <div class="header-info">
+          <div class="name">BizSaathi Advisor</div>
+          <div class="status">
+            <span class="status-dot"></span>
+            <span id="header-status">Online · Gemini 2.0</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="clearChat()" title="New conversation" aria-label="Clear chat">🗑️</button>
+        </div>
+      </header>
+
+      <!-- Messages Area -->
+      <div id="messages-area" role="log" aria-live="polite" aria-label="Chat messages">
+
+        <!-- Welcome Screen (shown before first message) -->
+        <div id="welcome-screen">
+          <div class="welcome-icon">🌱</div>
+          <h2 class="welcome-title">Namaste! I'm BizSaathi</h2>
+          <p class="welcome-subtitle">Your AI-powered business advisor. Ask me anything about your business, government
+            schemes, loans, GST, or marketing.</p>
+          <div class="quick-starts">
+            <button class="quick-start-btn" onclick="sendQuickStart(this)">💰 Mudra Loan kaise milega?</button>
+            <button class="quick-start-btn" onclick="sendQuickStart(this)">📊 Help me with GST registration</button>
+            <button class="quick-start-btn" onclick="sendQuickStart(this)">🏪 How to grow my small shop?</button>
+            <button class="quick-start-btn" onclick="sendQuickStart(this)">📱 UPI payment setup karo</button>
+            <button class="quick-start-btn" onclick="sendQuickStart(this)">🌾 PM SVANidhi scheme details</button>
+            <button class="quick-start-btn" onclick="sendQuickStart(this)">📋 Business plan banane mein help</button>
+          </div>
+        </div>
+
+        <!-- Typing indicator -->
+        <div id="typing-indicator">
+          <div class="msg-avatar">🤖</div>
+          <div class="typing-bubble">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+
+      </div><!-- /#messages-area -->
+
+      <!-- Input Area -->
+      <div id="input-area">
+        <button id="mic-btn" onclick="toggleMic()" title="Voice input" aria-label="Voice input">🎙️</button>
+        <div id="message-input-wrapper">
+          <textarea id="message-input" placeholder="Type your business question..." rows="1" maxlength="4096"
+            onkeydown="handleInputKeydown(event)" oninput="autoResize(this)" aria-label="Message input"></textarea>
+          <button id="send-btn" onclick="sendMessage()" aria-label="Send message" disabled>
+            ➤
+          </button>
+        </div>
+      </div>
+
+    </main><!-- /#chat-panel -->
+  </div><!-- /#app -->
+
+  <!-- Toast container -->
+  <div id="toast-container" role="status" aria-live="polite"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+
+</html>
