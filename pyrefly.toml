@@ -1,3 +1,0 @@
-project-includes = ["backend"]
-search-path = ["backend"]
-infer-with-first-use = false
